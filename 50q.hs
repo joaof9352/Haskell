@@ -36,9 +36,9 @@ tomar n (h:t) | n >= (length (h:t)) = (h:t)
 
 --Ex7
 tirar :: Int -> [a] -> [a]
-tirar n (h:[]) = [h]
+tirar n (h:[]) = []
 tirar n (h:t) | n == 0 = (h:t)
-              | n >= (length (h:t)) = []
+              | (length (h:t)) <= n = []
               | otherwise = tirar (n-1) t
 
 --Ex8
@@ -78,19 +78,26 @@ aux4 x (y:ys) | x == y = aux4 x ys
               | otherwise = y:ys
 aux4 _ [] = []
 
+--OU
+
+mygroup' :: Eq a => [a] -> [[a]]
+mygroup' [] = []
+mygroup' (h:t) = (takeWhile (==h) (h:t)):mygroup' (dropWhile (==h) (h:t))
+
 --Ex13
+
 concatar :: [[a]] -> [a]
 concatar [] = []
 concatar (x:xs) = x ++ concatar xs
 
---Ex14 (?)
+--Ex14 
 myinits :: [a] -> [[a]]
 myinits [] = [[]] 
-myinits (h:t) = init 
+myinits (h:t) = myinits (init (h:t)) ++ [h:t]
 
 --Ex15
 mytails :: [a] -> [[a]]
-mytails [] = []:[]
+mytails [] = [[]]
 mytails (h:t) = (h:t):mytails t
 
 --Ex16
@@ -122,7 +129,12 @@ sequen (h:hs) (x:xs) | length (h:hs) == length (x:xs) = if h == x then sequen hs
 --Ex19
 myElemIndices :: Eq a => a -> [a] -> [Int]
 myElemIndices _ [] = []
-myElemIndices a (h:hs) = undefined
+myElemIndices a (h:t) = (aux3 0 a (h:t))
+
+aux3 :: Eq a => Int -> a -> [a] -> [Int]
+aux3 n a [] = []
+aux3 n a (h:t) | a == h = n:aux3 (n+1) a t
+               | otherwise = aux3 (n+1) a t
 
 --Ex20
 myNub :: Eq a => [a] -> [a]
@@ -135,7 +147,7 @@ myDelete _ [] = []
 myDelete a (h:hs) | a == h = hs
                   | otherwise = h:myDelete a hs
  
---Ex22 (Ver de novo)
+--Ex22 
 myRemove :: Eq a => [a] -> [a] -> [a]
 myRemove a [] = a
 myRemove l (y:ys) = myRemove (myDelete y l) ys
@@ -210,15 +222,18 @@ myIsSorted (h:t:ts) | h < t = myIsSorted (t:ts)
 --Ex34
 myiSort :: Ord a => [a] -> [a]
 myiSort [] = []
-myiSort (h:ts) = let menores = filter (<= h) ts
-                     maiores = filter ( > h) ts
-                 in (myiSort menores) ++ [h] ++ (myiSort maiores)
+myiSort (h:ts) = insere h (myiSort ts)
+
+insere :: Ord a => a -> [a] -> [a] 
+insere a [] = [a]
+insere a (h:t) | a >= h = h:a:t
+               | otherwise = h:insere a t
 
 --Ex35
---menor :: String -> String -> Bool
---menor _ [] = True
---menor [] _ = False
---menor (h:t) (x:xs) = h < t || menor t xs
+menor :: String -> String -> Bool
+menor _ [] = True
+menor [] _ = False
+menor (h:t) (x:xs) = h < x || menor t xs
 
 --Ex36
 myelemMSet :: Eq a => a -> [(a,Int)] -> Bool
@@ -251,16 +266,33 @@ removeMSet a ((b,c):xs) | a == b = (b,(c-1)):xs
 
 --Ex41
 constroiMSet :: Ord a => [a] -> [(a,Int)]
-constroiMSet (h:t) = undefined
+constroiMSet [] = []
+constroiMSet (h:t) = aux6 1 h t:constroiMSet (aux7 h t)
 
-aux6 :: a -> [a] -> Int
- 
+aux6 :: Ord a => Int -> a -> [a] -> (a,Int)
+aux6 n a [] = (a,n)
+aux6 n a (h:t) | a == h = aux6 (n+1) a t
+               | otherwise = (a,n)
 
-aux7 :: a -> [a] -> [a]
+aux7 :: Ord a => a -> [a] -> [a]
+aux7 a [] = []
+aux7 a l@(h:t) | a == h = aux7 a t
+               | otherwise = l
+
 
 --Ex42
+partitionEithers :: [Either a b] -> ([a],[b])
+partitionEithers [] = ([],[])
+partitionEithers ((Left a):t) = (a:as,bs)
+    where (as,bs) = partitionEithers t
+partitionEithers ((Right b):t) = (as,b:bs)
+    where (as,bs) = partitionEithers t 
 
 --Ex43
+catMaybes :: [Maybe a] -> [a]
+catMaybes [] = []
+catMaybes (h:t) = case h of Just h -> h:catMaybes t
+                            Nothing -> catMaybes t
 
 data Movimento = Norte | Sul | Este | Oeste deriving Show
 
@@ -299,11 +331,21 @@ maiscentral (h:[]) = h
 maiscentral ((Pos x1 y1):(Pos x2 y2):ts) = if dis1 < dis2 then maiscentral ((Pos x1 y1):ts) else maiscentral ((Pos x2 y2):ts)
   where dis1 = (x1)^2 + (y1)^2
         dis2 = (x2)^2 + (y2)^2
+        
+--48
+vizinhos :: Posicao -> [Posicao] -> [Posicao]
+vizinhos (Pos x1 y1) [] = []
+vizinhos (Pos x1 y1) ((Pos x2 y2):ts) | ((abs (x1-x2)) <= 1) && ((abs (y1-y2)) <= 1 ) = (Pos x2 y2):vizinhos (Pos x1 y1) ts
+                                      | otherwise = vizinhos (Pos x1 y1) ts
 
---Ex48
+--49
+mesmaOrd :: [Posicao] -> Bool
+mesmaOrd (Pos x1 y1:[]) = True
+mesmaOrd (Pos x1 y1:Pos x2 y2:xs) = if y1 == y2 then mesmaOrd (Pos x1 y1:xs) else False
+
 
 --Ex50
 data Semaforo = Verde | Amarelo | Vermelho deriving Show
 
 interseccaoOK :: [Semaforo] -> Bool
-interseccaoOK (h:hs) = undefined
+interseccaoOK l = length [x | x <- l, case x of Vermelho -> False; otherwise -> True ] < 2
