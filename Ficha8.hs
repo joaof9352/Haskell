@@ -2,8 +2,6 @@ module Ficha8 where
 
 data Frac = F Integer Integer 
 
--- Mandar para 930613494
-
 --data Ordering = LT | EQ | GT
 
 normaliza :: Frac -> Frac
